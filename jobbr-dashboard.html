@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function(){
+  var k = sessionStorage.getItem('jbr_auth');
+  if(k === 'ok') return;
+  var pwd = prompt('Struxia Admin — enter password:');
+  if(pwd !== 'leslie123'){
+    document.write('<div style="font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;background:#faf7f2;color:#8b7355;font-size:15px">Access denied. <a href="index.html" style="margin-left:8px;color:#243d32">← Go back</a></div>');
+    document.close();
+    return;
+  }
+  sessionStorage.setItem('jbr_auth','ok');
+})();
+</script>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23243d32'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia,serif' font-size='17' font-weight='500' fill='%23faf7f2'%3ES%3C/text%3E%3C/svg%3E">
+<title>Struxia — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c:#faf7f2; --cs:#f4efe6; --cl:#ebe3d4; --cb:#d4c4a8; --cm:#8b7355; --cd:#3d2b1a; --ci:#1a1209;
+  --g:#243d32; --gm:#335548; --gs:#4a7c62; --gl:#dff0e8; --glb:#b8dfc9;
+  --gold:#c9a84c; --warn:#e8a838; --warn-bg:#fef8ec; --err:#c0392b; --err-bg:#fdf0ee;
+  --w:#fff; --b05:rgba(26,18,9,0.05); --b10:rgba(26,18,9,0.10); --b15:rgba(26,18,9,0.15); --b30:rgba(26,18,9,0.30);
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'Outfit',system-ui,sans-serif;
+  --mono:'DM Mono',monospace;
+  --r:10px; --rl:16px; --rxl:24px;
+  --sh0:0 1px 3px rgba(26,18,9,0.06); --sh1:0 2px 12px rgba(26,18,9,0.08);
+  --sh2:0 8px 32px rgba(26,18,9,0.12); --sh3:0 20px 64px rgba(26,18,9,0.16);
+}
+html{height:100%}
+body{font-family:var(--sans);background:var(--c);color:var(--ci);min-height:100vh;display:flex;flex-direction:column;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* NAV */
+#nav{height:64px;background:rgba(250,247,242,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--b10);display:flex;align-items:center;padding:0 32px;gap:16px;position:sticky;top:0;z-index:200;flex-shrink:0}
+.nav-logo{display:flex;align-items:center;gap:10px;cursor:pointer;flex-shrink:0;text-decoration:none}
+.nav-logo-mark{width:34px;height:34px;background:var(--g);border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:17px;font-weight:500;color:var(--c);letter-spacing:-0.3px}
+.nav-logo-name{font-family:var(--serif);font-size:22px;font-weight:400;color:var(--ci);letter-spacing:-0.3px;font-style:italic}
+.nav-center{flex:1;display:flex;align-items:center;justify-content:center;gap:4px}
+.nav-link{font-size:14px;font-weight:400;color:var(--cm);padding:7px 16px;border-radius:100px;border:none;background:none;cursor:pointer;transition:all 0.2s;font-family:var(--sans)}
+.nav-link:hover{color:var(--ci);background:var(--cs)}
+.nav-link.on{color:var(--g);background:var(--gl);font-weight:500}
+.nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.nav-btn{font-family:var(--sans);font-size:13px;font-weight:500;border:none;border-radius:100px;cursor:pointer;transition:all 0.2s;padding:9px 22px}
+.nav-btn-p{background:var(--g);color:var(--c)}
+.nav-btn-p:hover{background:var(--gm);transform:translateY(-1px)}
+.nav-btn-g{background:transparent;color:var(--ci);border:1px solid var(--b15)}
+.nav-btn-g:hover{background:var(--cs)}
+.nav-notif{width:36px;height:36px;border-radius:50%;border:1px solid var(--b15);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all 0.2s;background:transparent;position:relative}
+.nav-notif:hover{background:var(--cs)}
+.ndot{position:absolute;top:6px;right:6px;width:7px;height:7px;background:var(--g);border-radius:50%;border:1.5px solid var(--c)}
+
+/* SHELL */
+#shell{display:flex;flex:1;overflow:hidden;min-height:0}
+#side{width:236px;flex-shrink:0;background:var(--w);border-right:1px solid var(--b10);padding:20px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+#body{flex:1;overflow-y:auto;padding:40px 36px}
+
+/* PAGES */
+.pg{display:none;animation:pgIn 0.28s cubic-bezier(.25,.46,.45,.94) both}
+.pg.on{display:block}
+@keyframes pgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* SIDEBAR */
+.side-sec{font-size:9px;font-weight:600;color:var(--cb);letter-spacing:2px;text-transform:uppercase;padding:10px 12px 4px;margin-top:10px}
+.side-sec:first-child{margin-top:0}
+.side-item{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:var(--r);font-family:var(--sans);font-size:13px;font-weight:400;color:var(--cm);cursor:pointer;transition:all 0.18s;border:none;background:none;width:100%;text-align:left}
+.side-item:hover{color:var(--ci);background:var(--cs)}
+.side-item.on{color:var(--g);background:var(--gl);font-weight:500}
+.side-icon{font-size:15px;width:20px;flex-shrink:0;opacity:0.75}
+.side-badge{margin-left:auto;font-size:9px;font-weight:600;padding:2px 8px;border-radius:100px;flex-shrink:0}
+.sb-g{background:var(--gl);color:var(--g)}
+.sb-w{background:var(--warn-bg);color:#a06010}
+.side-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--b10);padding-left:13px;font-size:11px;color:var(--cb);line-height:2}
+
+/* SHARED */
+.btn{font-family:var(--sans);font-weight:500;border:none;cursor:pointer;border-radius:100px;transition:all 0.2s;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.btn-g{background:var(--g);color:var(--c);padding:11px 24px}
+.btn-g:hover{background:var(--gm);transform:translateY(-1px);box-shadow:var(--sh1)}
+.btn-o{background:var(--w);color:var(--ci);border:1px solid var(--b15);padding:10px 20px}
+.btn-o:hover{background:var(--cs)}
+.btn-sm{padding:8px 16px !important;font-size:13px !important}
+.btn-full{width:100%;justify-content:center;padding:14px !important}
+
+.card{background:var(--w);border:1px solid var(--b10);border-radius:var(--rl);padding:24px;box-shadow:var(--sh0);transition:box-shadow 0.2s}
+.card:hover{box-shadow:var(--sh1)}
+
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:4px 12px;border-radius:100px}
+.chip-g{background:var(--gl);color:var(--g)}
+.chip-w{background:var(--warn-bg);color:#a06010}
+.chip-e{background:var(--err-bg);color:var(--err)}
+.chip-s{background:var(--cs);color:var(--cm)}
+
+.sec-h{font-family:var(--serif);font-size:30px;font-weight:400;color:var(--ci);letter-spacing:-0.5px;line-height:1.1}
+.sec-sub{font-size:13px;color:var(--cm);margin-top:5px}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+.lbl{font-size:12px;font-weight:500;color:var(--cm);margin-bottom:6px;display:block}
+.inp{width:100%;font-family:var(--sans);font-size:14px;padding:12px 16px;border:1px solid var(--b15);border-radius:var(--r);background:var(--cs);color:var(--ci);outline:none;transition:all 0.2s}
+.inp:focus{border-color:var(--g);background:var(--w);box-shadow:0 0 0 3px rgba(36,61,50,0.08)}
+
+.pbar{background:var(--cl);border-radius:100px;height:5px;overflow:hidden}
+.pfill{height:100%;border-radius:100px;transition:width 0.8s ease}
+.divider{height:1px;background:var(--b10);margin:18px 0}
+
+/* Toast */
+#toast-root{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--ci);color:var(--c);padding:13px 18px;border-radius:var(--r);font-size:13px;max-width:320px;line-height:1.5;box-shadow:var(--sh3);animation:toastIn 0.3s ease;border-left:3px solid var(--gs)}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+
+/* ═══ DASHBOARD ═══ */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.kpi{background:var(--w);border:1px solid var(--b10);border-radius:var(--rl);padding:20px 22px;cursor:pointer;transition:all 0.2s}
+.kpi:hover{transform:translateY(-2px);box-shadow:var(--sh1)}
+.kpi.hl{border-top:2px solid var(--g)}
+.kpi-lbl{font-size:11px;color:var(--cb);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.8px;font-weight:500}
+.kpi-n{font-family:var(--serif);font-size:32px;font-weight:400;color:var(--ci);letter-spacing:-0.8px;margin-bottom:4px;line-height:1}
+.kpi-t{font-size:12px}
+.t-up{color:var(--g)} .t-dn{color:var(--err)} .t-flat{color:var(--cb)}
+
+.dash-grid{display:grid;grid-template-columns:1fr 310px;gap:18px}
+
+.act-item{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--b10)}
+.act-item:last-child{border-bottom:none}
+.act-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.act-txt{font-size:13px;color:var(--cm);line-height:1.5}
+.act-time{font-size:11px;color:var(--cb);margin-top:3px}
+.act-link{font-size:12px;color:var(--g);cursor:pointer;margin-top:4px;display:inline-block;font-weight:500}
+.act-link:hover{text-decoration:underline}
+
+.health-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--b10)}
+.health-row:last-child{border-bottom:none}
+.health-icon{font-size:15px;width:20px;flex-shrink:0}
+.health-lbl{flex:1;font-size:13px;color:var(--cm)}
+.health-val{font-size:12px;font-weight:500}
+
+/* Chart */
+.chart-wrap{display:flex;align-items:flex-end;gap:6px;height:88px;padding:4px 0 0;border-bottom:2px solid var(--b10);margin-bottom:8px}
+.chart-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px}
+.chart-bar{width:100%;border-radius:3px 3px 0 0;min-height:3px;transition:height 0.8s ease}
+.chart-lbl{font-size:9px;color:var(--cb);margin-top:4px}
+.chart-val{font-size:9px;font-weight:500;color:var(--g)}
+
+/* Urgency cards */
+.urg{border-left:3px solid;border-radius:0 var(--r) var(--r) 0;padding:12px 16px;margin-bottom:10px;cursor:pointer;transition:all 0.18s}
+.urg:hover{opacity:0.9;transform:translateX(3px)}
+.urg-amber{border-left-color:var(--warn);background:var(--warn-bg)}
+.urg-red{border-left-color:var(--err);background:var(--err-bg)}
+.urg-title{font-size:13px;font-weight:500;color:var(--ci);margin-bottom:3px}
+.urg-sub{font-size:12px;color:var(--cb)}
+
+/* ═══ ACTIVE JOB ═══ */
+.active-hero{background:var(--g);border-radius:var(--rxl);padding:44px 48px;margin-bottom:24px;position:relative;overflow:hidden}
+.active-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 75% 15%,rgba(74,124,98,0.25) 0%,transparent 55%);pointer-events:none}
+.active-layout{display:grid;grid-template-columns:1fr 300px;gap:22px}
+.jd-cat{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gs);margin-bottom:12px;font-weight:500;position:relative;z-index:1}
+.jd-title{font-family:var(--serif);font-size:34px;font-weight:300;color:var(--c);letter-spacing:-1px;margin-bottom:14px;line-height:1.05;position:relative;z-index:1}
+.jd-meta{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:18px;position:relative;z-index:1}
+.jd-mi{font-size:13px;color:rgba(250,247,242,0.4)}
+.jd-actions{display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1}
+.jd-btn-p{font-family:var(--sans);font-size:13px;font-weight:500;background:var(--c);color:var(--g);border:none;border-radius:100px;padding:11px 22px;cursor:pointer;transition:all 0.2s}
+.jd-btn-p:hover{background:var(--cs);transform:translateY(-1px)}
+.jd-btn-s{font-size:12px;padding:7px 16px;border-radius:100px;background:rgba(255,255,255,0.08);color:rgba(250,247,242,0.6);border:1px solid rgba(255,255,255,0.12);cursor:pointer;transition:all 0.2s;font-family:var(--sans)}
+.jd-btn-s:hover{background:rgba(255,255,255,0.15);color:var(--c)}
+
+/* Milestone steps */
+.ms-step{flex:1;text-align:center;position:relative;z-index:1}
+.ms-dot{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;transition:all 0.3s}
+.ms-done .ms-dot{background:var(--g);color:var(--c);font-size:16px}
+.ms-now .ms-dot{background:var(--g);color:var(--c);font-family:var(--serif);font-size:16px;box-shadow:0 0 0 6px rgba(36,61,50,0.1)}
+.ms-locked .ms-dot{background:var(--w);border:1.5px solid var(--b15);color:var(--cb);font-family:var(--serif);font-size:16px}
+.ms-name{font-size:13px;font-weight:500;color:var(--ci);margin-bottom:3px}
+.ms-price{font-family:var(--serif);font-size:16px;color:var(--g);margin-top:3px}
+
+/* Photo timeline */
+.pt-item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--b10);position:relative}
+.pt-item:last-child{border-bottom:none}
+.pt-av{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:11px;color:var(--c);flex-shrink:0;margin-top:2px}
+.pt-author{font-size:14px;font-weight:500;color:var(--ci)}
+.pt-time{font-size:11px;color:var(--cb)}
+.pt-caption{font-size:13px;color:var(--cm);margin:6px 0 10px;line-height:1.5}
+.pt-photos{display:flex;gap:8px}
+.pt-photo{width:68px;height:68px;background:var(--cs);border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;transition:transform 0.2s;border:1px solid var(--b10)}
+.pt-photo:hover{transform:scale(1.06)}
+
+/* ═══ ANALYTICS ═══ */
+.analytics-hero{background:var(--g);border-radius:var(--rxl);padding:36px 44px;margin-bottom:24px;position:relative;overflow:hidden}
+.analytics-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 20%,rgba(74,124,98,0.2) 0%,transparent 55%);pointer-events:none}
+.an-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
+.an-card{background:var(--w);border:1px solid var(--b10);border-radius:var(--rl);padding:20px;transition:all 0.2s}
+.an-card:hover{transform:translateY(-2px);box-shadow:var(--sh1)}
+.an-n{font-family:var(--serif);font-size:28px;font-weight:400;color:var(--g);letter-spacing:-0.8px;margin-bottom:4px}
+.an-l{font-size:12px;color:var(--cb);margin-bottom:6px}
+.an-t{font-size:12px;color:var(--gs);font-weight:500}
+
+.big-chart-wrap{background:var(--w);border:1px solid var(--b10);border-radius:var(--rl);padding:24px;margin-bottom:16px}
+.big-chart{display:flex;align-items:flex-end;gap:8px;height:160px;padding:8px 0 0;border-bottom:1px solid var(--b10);margin-bottom:12px}
+.bc-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px}
+.bc-bar{width:100%;border-radius:4px 4px 0 0;cursor:pointer;transition:all 0.2s;min-height:3px}
+.bc-bar:hover{filter:brightness(1.15)}
+.bc-lbl{font-size:10px;color:var(--cb);margin-top:5px}
+.bc-val{font-size:10px;font-weight:500;color:var(--g)}
+
+.tbl-wrap{background:var(--w);border:1px solid var(--b10);border-radius:var(--rl);overflow:hidden}
+.tbl-hdr{display:flex;padding:12px 18px;background:var(--cs);border-bottom:1px solid var(--b10)}
+.tbl-hdr span{font-size:10px;font-weight:600;color:var(--cb);text-transform:uppercase;letter-spacing:0.8px}
+.tbl-row{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--b10);transition:background 0.15s}
+.tbl-row:last-child{border-bottom:none}
+.tbl-row:hover{background:var(--cs)}
+
+/* ═══ SETTINGS ═══ */
+.settings-grid{display:grid;grid-template-columns:200px 1fr;gap:24px}
+.settings-nav{display:flex;flex-direction:column;gap:2px}
+.sn-item{padding:10px 14px;border-radius:var(--r);font-size:13px;color:var(--cm);cursor:pointer;transition:all 0.18s;border:none;background:none;text-align:left;font-family:var(--sans)}
+.sn-item:hover{background:var(--cs);color:var(--ci)}
+.sn-item.on{background:var(--gl);color:var(--g);font-weight:500}
+.settings-panel{display:none}
+.settings-panel.on{display:block}
+.settings-sec{margin-bottom:28px}
+.settings-sec-title{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ci);margin-bottom:16px;letter-spacing:-0.3px}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--b10)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-lbl{font-size:14px;color:var(--ci)}
+.toggle-sub{font-size:12px;color:var(--cb);margin-top:3px}
+.toggle{width:44px;height:24px;border-radius:12px;background:var(--cl);cursor:pointer;position:relative;transition:all 0.3s;border:none}
+.toggle.on{background:var(--g)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--w);transition:all 0.3s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.toggle.on::after{left:23px}
+
+/* Back button */
+.back{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--cm);cursor:pointer;margin-bottom:20px;background:none;border:none;font-family:var(--sans);transition:color 0.2s}
+.back:hover{color:var(--ci)}
+</style>
+</head>
+<body>
+<div id="toast-root"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-logo" onclick="go('dash')">
+    <div class="nav-logo-mark">S</div>
+    <span class="nav-logo-name">struxia</span>
+  </div>
+  <div class="nav-center">
+    <button class="nav-link" onclick="window.location.href='index.html'">Explore</button>
+    <button class="nav-link" onclick="window.location.href='index.html'">Post a job</button>
+    <button class="nav-link on" id="nl-dash" onclick="go('dash')">Dashboard</button>
+    <button class="nav-link" id="nl-active" onclick="go('active')">Active job</button>
+    <button class="nav-link" id="nl-analytics" onclick="go('analytics')">Analytics</button>
+  </div>
+  <div class="nav-right">
+    <div class="nav-notif" onclick="toast('Milestone 2 ready for your approval')">
+      <span>🔔</span><div class="ndot"></div>
+    </div>
+    <button class="nav-btn nav-btn-g" onclick="go('settings')">Settings</button>
+    <button class="nav-btn nav-btn-p" onclick="window.location.href='index.html'">Post a job</button>
+  </div>
+</nav>
+
+<!-- SHELL -->
+<div id="shell">
+
+<!-- SIDEBAR -->
+<aside id="side">
+  <div class="side-sec">Overview</div>
+  <button class="side-item on" id="si-dash" onclick="go('dash')"><span class="side-icon">▤</span>Dashboard</button>
+  <button class="side-item" id="si-analytics" onclick="go('analytics')"><span class="side-icon">◎</span>Analytics</button>
+  <button class="side-item" id="si-settings" onclick="go('settings')"><span class="side-icon">◉</span>Settings</button>
+  <div class="side-sec">Active jobs</div>
+  <button class="side-item" id="si-active" onclick="go('active')"><span class="side-icon">◈</span>Kitchen reno<span class="side-badge sb-w">Milestone 2</span></button>
+  <div class="side-sec">Platform</div>
+  <button class="side-item" id="si-ctrs" onclick="go('contractors')"><span class="side-icon">◻</span>Contractors<span class="side-badge sb-g">6</span></button>
+  <button class="side-item" id="si-payouts" onclick="go('payouts')"><span class="side-icon">◑</span>Payouts</button>
+  <div class="side-foot">
+    <strong style="color:var(--cm);font-size:12px">struxia admin</strong><br>
+    Sarah · lesliecarre9@gmail.com
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main id="body">
+
+<!-- ═══ DASHBOARD ═══ -->
+<div class="pg on" id="pg-dash">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px">
+    <div>
+      <div style="font-family:var(--serif);font-size:34px;font-weight:300;color:var(--ci);letter-spacing:-0.8px;margin-bottom:6px">Good morning, Leslie</div>
+      <div style="font-size:14px;color:var(--cb)">Monday, March 23, 2026 · struxia.ca is live</div>
+    </div>
+    <button class="btn btn-g btn-sm" onclick="window.location.href='index.html'">Post a new job</button>
+  </div>
+
+  <!-- Urgent -->
+  <div style="margin-bottom:22px">
+    <div class="urg urg-amber" onclick="go('active')">
+      <div class="urg-title">Milestone 2 ready for your approval — Summit Builds kitchen</div>
+      <div class="urg-sub">Cabinets + countertops installed · Review progress photos and release $2,880</div>
+    </div>
+    <div class="urg urg-amber" onclick="window.location.href='index.html'">
+      <div class="urg-title">AI analyzer flagged a bid on your kitchen job</div>
+      <div class="urg-sub">RendezVous Réno flagged as overpriced — view the full analysis</div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi hl" onclick="go('analytics')">
+      <div class="kpi-lbl">Total GMV</div>
+      <div class="kpi-n">$47,200</div>
+      <div class="kpi-t t-up">↑ +$8,400 this week</div>
+    </div>
+    <div class="kpi" onclick="go('analytics')">
+      <div class="kpi-lbl">Revenue (3%)</div>
+      <div class="kpi-n">$1,416</div>
+      <div class="kpi-t t-up">↑ +$252 this week</div>
+    </div>
+    <div class="kpi" onclick="go('active')">
+      <div class="kpi-lbl">Active jobs</div>
+      <div class="kpi-n">3</div>
+      <div class="kpi-t t-flat">1 at milestone 2</div>
+    </div>
+    <div class="kpi" onclick="go('analytics')">
+      <div class="kpi-lbl">Total bids</div>
+      <div class="kpi-n">12</div>
+      <div class="kpi-t t-up">↑ 4 this week</div>
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <div>
+      <!-- Revenue chart -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ci);margin-bottom:18px;letter-spacing:-0.3px">Revenue — last 8 weeks</div>
+        <div class="chart-wrap">
+          <div class="chart-col"><div class="chart-bar" style="height:14px;background:var(--cl)"></div><div class="chart-lbl">W1</div><div class="chart-val">$0</div></div>
+          <div class="chart-col"><div class="chart-bar" style="height:26px;background:var(--cl)"></div><div class="chart-lbl">W2</div><div class="chart-val">$84</div></div>
+          <div class="chart-col"><div class="chart-bar" style="height:40px;background:var(--cl)"></div><div class="chart-lbl">W3</div><div class="chart-val">$156</div></div>
+          <div class="chart-col"><div class="chart-bar" style="height:52px;background:var(--cl)"></div><div class="chart-lbl">W4</div><div class="chart-val">$210</div></div>
+          <div class="chart-col"><div class="chart-bar" style="height:62px;background:var(--cl)"></div><div class="chart-lbl">W5</div><div class="chart-val">$270</div></div>
+          <div class="chart-col"><div class="chart-bar" style="height:72px;background:var(--cl)"></div><div class="chart-lbl">W6</div><div class="chart-val">$294</div></div>
+          <div class="chart-col"><div class="chart-bar" style="height:82px;background:var(--cl)"></div><div class="chart-lbl">W7</div><div class="chart-val">$342</div></div>
+          <div class="chart-col"><div class="chart-bar" style="height:90px;background:var(--g)"></div><div class="chart-lbl">Now</div><div class="chart-val">$252</div></div>
+        </div>
+      </div>
+
+      <!-- Activity -->
+      <div class="card">
+        <div style="font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ci);margin-bottom:18px;letter-spacing:-0.3px">Live activity</div>
+        <div class="act-item"><div class="act-dot" style="background:var(--g)"></div><div><div class="act-txt"><strong style="color:var(--ci)">Summit Builds</strong> marked milestone 2 complete — 3 photos uploaded</div><div class="act-time">1 hr ago</div><div class="act-link" onclick="go('active')">Review &amp; approve →</div></div></div>
+        <div class="act-item"><div class="act-dot" style="background:var(--gs)"></div><div><div class="act-txt"><strong style="color:var(--ci)">AI analyzer</strong> flagged RendezVous Réno bid — 1 warning</div><div class="act-time">2 hrs ago</div><div class="act-link" onclick="window.location.href='index.html'">View analysis →</div></div></div>
+        <div class="act-item"><div class="act-dot" style="background:var(--g)"></div><div><div class="act-txt"><strong style="color:var(--ci)">$2,160</strong> released to Summit Builds — milestone 1 approved</div><div class="act-time">6 days ago</div></div></div>
+        <div class="act-item"><div class="act-dot" style="background:var(--cm)"></div><div><div class="act-txt"><strong style="color:var(--ci)">Video assessment</strong> completed with Summit Builds — 15 min call</div><div class="act-time">Mar 17</div></div></div>
+        <div class="act-item"><div class="act-dot" style="background:var(--cb)"></div><div><div class="act-txt"><strong style="color:var(--ci)">4 bids received</strong> on kitchen renovation — AI analysis ready</div><div class="act-time">Mar 16</div></div></div>
+      </div>
+    </div>
+
+    <div>
+      <!-- Health -->
+      <div class="card" style="margin-bottom:14px">
+        <div style="font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ci);margin-bottom:18px;letter-spacing:-0.3px">Platform health</div>
+        <div class="health-row"><div class="health-icon">◎</div><div class="health-lbl">Stripe escrow</div><div class="health-val" style="color:var(--g)">Online</div></div>
+        <div class="health-row"><div class="health-icon">◎</div><div class="health-lbl">AI analyzer</div><div class="health-val" style="color:var(--g)">Active</div></div>
+        <div class="health-row"><div class="health-icon">◎</div><div class="health-lbl">Supabase DB</div><div class="health-val" style="color:var(--g)">Online</div></div>
+        <div class="health-row"><div class="health-icon">◎</div><div class="health-lbl">Vercel deploy</div><div class="health-val" style="color:var(--g)">Live</div></div>
+        <div class="health-row"><div class="health-icon">◎</div><div class="health-lbl">FINTRAC</div><div class="health-val" style="color:var(--warn)">Day 6</div></div>
+        <div class="health-row"><div class="health-icon">◎</div><div class="health-lbl">Insurance</div><div class="health-val" style="color:var(--warn)">Day 7</div></div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="card" style="margin-bottom:14px">
+        <div style="font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ci);margin-bottom:16px;letter-spacing:-0.3px">Quick actions</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-g btn-full" onclick="go('active')">Approve milestone 2 ($2,880)</button>
+          <button class="btn btn-o btn-full btn-sm" onclick="window.location.href='index.html'">View AI bid analysis</button>
+          <button class="btn btn-o btn-full btn-sm" onclick="window.location.href='index.html'">Post a new job</button>
+        </div>
+      </div>
+
+      <!-- Month goal -->
+      <div class="card">
+        <div style="font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ci);margin-bottom:6px;letter-spacing:-0.3px">Month goal</div>
+        <div style="font-family:var(--serif);font-size:30px;font-weight:300;color:var(--g);letter-spacing:-0.8px;margin-bottom:4px">$30K GMV</div>
+        <div style="font-size:13px;color:var(--cb);margin-bottom:10px">$47.2K — ahead of pace 🎉</div>
+        <div class="pbar"><div class="pfill" style="width:100%;background:var(--g)"></div></div>
+        <div style="font-size:12px;color:var(--g);margin-top:6px;font-weight:500">Goal crushed · 9 days left</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ACTIVE JOB ═══ -->
+<div class="pg" id="pg-active">
+  <button class="back" onclick="go('dash')">← Back to dashboard</button>
+  <div class="active-hero">
+    <div class="jd-cat">Kitchen · Montréal · In progress</div>
+    <div class="jd-title">Full kitchen renovation<br>— open concept</div>
+    <div class="jd-meta">
+      <span class="jd-mi">Summit Builds</span>
+      <span class="jd-mi">$7,200 total</span>
+      <span class="jd-mi">Started March 18</span>
+      <span class="chip chip-s" style="font-size:11px">Milestone 2 of 3</span>
+    </div>
+    <div class="jd-actions">
+      <button class="jd-btn-p" onclick="approveMilestone()">✓ Approve milestone 2 — $2,880</button>
+      <button class="jd-btn-s" onclick="toast('Opening dispute center…')">Raise a concern</button>
+    </div>
+  </div>
+
+  <div class="active-layout">
+    <div>
+      <!-- Milestone tracker -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-family:var(--serif);font-size:22px;font-weight:400;color:var(--ci);margin-bottom:24px;letter-spacing:-0.3px">Milestone progress</div>
+        <div style="display:flex;position:relative;margin-bottom:22px">
+          <div style="position:absolute;top:20px;left:20px;right:20px;height:1px;background:var(--b10)"></div>
+          <div class="ms-step ms-done">
+            <div class="ms-dot">✓</div>
+            <div class="ms-name">Start</div>
+            <div class="ms-price">$2,160</div>
+            <span class="chip chip-g" style="font-size:10px;margin-top:5px">Released</span>
+          </div>
+          <div class="ms-step ms-now" id="ms2-step">
+            <div class="ms-dot">2</div>
+            <div class="ms-name">Midpoint</div>
+            <div class="ms-price">$2,880</div>
+            <span class="chip chip-w" style="font-size:10px;margin-top:5px">Awaiting you</span>
+          </div>
+          <div class="ms-step ms-locked">
+            <div class="ms-dot">3</div>
+            <div class="ms-name">Completion</div>
+            <div class="ms-price" style="color:var(--cm)">$2,160</div>
+            <span class="chip chip-s" style="font-size:10px;margin-top:5px">Locked</span>
+          </div>
+        </div>
+        <div style="background:var(--gl);border-radius:var(--r);padding:16px 18px;border:1px solid var(--glb)">
+          <div style="font-size:14px;font-weight:500;color:var(--g);margin-bottom:6px">Milestone 2 is ready for your approval</div>
+          <div style="font-size:13px;color:var(--gm);margin-bottom:14px;line-height:1.6">Summit Builds marked it complete. Cabinets installed, countertops in. Review the progress photos below before releasing $2,880.</div>
+          <button style="width:100%;background:var(--g);color:var(--c);border:none;padding:13px;border-radius:var(--r);font-family:var(--sans);font-weight:500;font-size:14px;cursor:pointer;transition:background 0.2s" onmouseover="this.style.background='var(--gm)'" onmouseout="this.style.background='var(--g)'" onclick="approveMilestone()">✓ Approve milestone 2 — release $2,880</button>
+        </div>
+      </div>
+
+      <!-- Progress photos -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <div style="font-family:var(--serif);font-size:22px;font-weight:400;color:var(--ci);letter-spacing:-0.3px">Progress photos</div>
+          <span class="chip chip-s">14 photos · 6 days</span>
+        </div>
+        <div id="photo-tl"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div style="font-size:11px;font-weight:600;color:var(--cb);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">Escrow</div>
+        <div style="background:var(--g);border-radius:var(--r);padding:18px;text-align:center;margin-bottom:14px">
+          <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:6px">Total held</div>
+          <div style="font-family:var(--serif);font-size:36px;font-weight:300;color:var(--c);letter-spacing:-1px">$7,200</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:5px">Released milestone by milestone</div>
+        </div>
+        <div style="font-size:13px;color:var(--cm);line-height:2.4">✓ Milestone 1: $2,160 released<br>⏳ Milestone 2: $2,880 awaiting<br>⏸ Milestone 3: $2,160 locked</div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div style="font-size:11px;font-weight:600;color:var(--cb);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">Builder</div>
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px">
+          <div style="width:44px;height:44px;border-radius:11px;background:var(--g);display:flex;align-items:center;justify-content:center;font-family:var(--serif);color:var(--c);font-size:14px;flex-shrink:0">SB</div>
+          <div><div style="font-size:15px;font-weight:500;color:var(--ci)">Summit Builds</div><div style="font-size:12px;color:var(--cb)">Struxia Score 94 · Elite</div></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-o btn-sm btn-full" onclick="toast('Opening chat…')">Message</button>
+          <button class="btn btn-g btn-sm btn-full" onclick="toast('Opening profile…')">Profile</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-size:11px;font-weight:600;color:var(--cb);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px">Timeline</div>
+        <div style="font-size:13px;color:var(--cm);line-height:2.5">
+          ✓ Job posted — March 15<br>
+          ✓ 4 bids received — March 16<br>
+          ✓ Video assessment — March 17<br>
+          ✓ Work started — March 18<br>
+          ⏳ <strong style="color:var(--ci)">Milestone 2 — Now</strong><br>
+          ⏸ Est. completion — March 28
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ANALYTICS ═══ -->
+<div class="pg" id="pg-analytics">
+  <div class="analytics-hero">
+    <div style="position:relative;z-index:1">
+      <div style="font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gs);margin-bottom:12px;font-weight:500">Platform analytics</div>
+      <div style="font-family:var(--serif);font-size:36px;font-weight:300;color:var(--c);letter-spacing:-1px;margin-bottom:6px">$47,200 GMV</div>
+      <div style="font-size:14px;color:rgba(250,247,242,0.4)">Since launch · $1,416 revenue · 10% platform fee</div>
+    </div>
+  </div>
+
+  <div class="an-grid">
+    <div class="an-card"><div class="an-n">$47,200</div><div class="an-l">Total GMV</div><div class="an-t">↑ +21% vs last week</div></div>
+    <div class="an-card"><div class="an-n">$1,416</div><div class="an-l">Platform revenue</div><div class="an-t">↑ +$252 this week</div></div>
+    <div class="an-card"><div class="an-n">6</div><div class="an-l">Contractors signed up</div><div class="an-t">5 verified · 1 pending</div></div>
+    <div class="an-card"><div class="an-n">9</div><div class="an-l">Jobs posted</div><div class="an-t">3 active · 6 completed</div></div>
+    <div class="an-card"><div class="an-n">32</div><div class="an-l">Total bids submitted</div><div class="an-t">3.6 avg bids per job</div></div>
+    <div class="an-card"><div class="an-n">97%</div><div class="an-l">Goes to builder</div><div class="an-t">0 disputes to date</div></div>
+  </div>
+
+  <div class="big-chart-wrap">
+    <div style="font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ci);margin-bottom:18px;letter-spacing:-0.3px">Revenue by month</div>
+    <div class="big-chart">
+      <div class="bc-col"><div class="bc-bar" style="height:20px;background:var(--cl)"></div><div class="bc-lbl">Oct</div><div class="bc-val">$0</div></div>
+      <div class="bc-col"><div class="bc-bar" style="height:20px;background:var(--cl)"></div><div class="bc-lbl">Nov</div><div class="bc-val">$0</div></div>
+      <div class="bc-col"><div class="bc-bar" style="height:20px;background:var(--cl)"></div><div class="bc-lbl">Dec</div><div class="bc-val">$0</div></div>
+      <div class="bc-col"><div class="bc-bar" style="height:20px;background:var(--cl)"></div><div class="bc-lbl">Jan</div><div class="bc-val">$0</div></div>
+      <div class="bc-col"><div class="bc-bar" style="height:20px;background:var(--cl)"></div><div class="bc-lbl">Feb</div><div class="bc-val">$0</div></div>
+      <div class="bc-col"><div class="bc-bar" style="height:120px;background:var(--g)"></div><div class="bc-lbl">Mar</div><div class="bc-val">$1,416</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--cb)">First revenue month — every bar from here goes up</div>
+  </div>
+
+  <div class="tbl-wrap">
+    <div style="padding:16px 18px;border-bottom:1px solid var(--b10)">
+      <div style="font-family:var(--serif);font-size:18px;font-weight:400;color:var(--ci);letter-spacing:-0.3px">Recent transactions</div>
+    </div>
+    <div class="tbl-hdr">
+      <span style="flex:2">Job</span>
+      <span style="flex:1">Builder</span>
+      <span style="flex:1">Amount</span>
+      <span style="flex:1">Fee (3%)</span>
+      <span style="flex:1">Status</span>
+    </div>
+    <div class="tbl-row">
+      <span style="flex:2;font-size:13px;color:var(--ci)">Kitchen renovation — open concept</span>
+      <span style="flex:1;font-size:13px;color:var(--cm)">Summit Builds</span>
+      <span style="flex:1;font-family:var(--serif);font-size:14px;color:var(--g)">$7,200</span>
+      <span style="flex:1;font-size:13px;color:var(--gs)">$216</span>
+      <span style="flex:1"><span class="chip chip-w" style="font-size:10px">In progress</span></span>
+    </div>
+    <div class="tbl-row">
+      <span style="flex:2;font-size:13px;color:var(--ci)">Basement finishing — 800 sq ft</span>
+      <span style="flex:1;font-size:13px;color:var(--cm)">ProBuild Co.</span>
+      <span style="flex:1;font-family:var(--serif);font-size:14px;color:var(--g)">$14,500</span>
+      <span style="flex:1;font-size:13px;color:var(--gs)">$435</span>
+      <span style="flex:1"><span class="chip chip-g" style="font-size:10px">Completed</span></span>
+    </div>
+    <div class="tbl-row">
+      <span style="flex:2;font-size:13px;color:var(--ci)">Cedar deck and pergola build</span>
+      <span style="flex:1;font-size:13px;color:var(--cm)">Terrain Vert</span>
+      <span style="flex:1;font-family:var(--serif);font-size:14px;color:var(--g)">$8,800</span>
+      <span style="flex:1;font-size:13px;color:var(--gs)">$264</span>
+      <span style="flex:1"><span class="chip chip-g" style="font-size:10px">Completed</span></span>
+    </div>
+  <div class="tbl-wrap" style="margin-top:18px">
+    <div style="padding:16px 18px;border-bottom:1px solid var(--b10);display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-family:var(--serif);font-size:18px;font-weight:400;color:var(--ci);letter-spacing:-0.3px">📊 Price Intelligence Engine</div>
+        <div style="font-size:12px;color:var(--cb);margin-top:3px">Private · Not visible to users · Activates at 100 completed transactions</div>
+      </div>
+      <span class="chip chip-w" style="font-size:10px">0 / 100 transactions</span>
+    </div>
+    <div class="tbl-hdr">
+      <span style="flex:2">Category</span>
+      <span style="flex:1">City</span>
+      <span style="flex:1">Jobs completed</span>
+      <span style="flex:1">Avg price</span>
+      <span style="flex:1">Total GMV</span>
+      <span style="flex:1">Status</span>
+    </div>
+    <div id="pi-table">
+      <div class="tbl-row"><span style="flex:2;font-size:13px;color:var(--ci)">Kitchen</span><span style="flex:1;font-size:13px;color:var(--cm)">Montréal</span><span style="flex:1;font-size:13px;color:var(--cm)">0</span><span style="flex:1;font-family:var(--serif);font-size:14px;color:var(--cb)">—</span><span style="flex:1;font-size:13px;color:var(--cb)">$0</span><span style="flex:1"><span class="chip chip-s" style="font-size:10px">Collecting</span></span></div>
+      <div class="tbl-row"><span style="flex:2;font-size:13px;color:var(--ci)">Bathroom</span><span style="flex:1;font-size:13px;color:var(--cm)">Montréal</span><span style="flex:1;font-size:13px;color:var(--cm)">0</span><span style="flex:1;font-family:var(--serif);font-size:14px;color:var(--cb)">—</span><span style="flex:1;font-size:13px;color:var(--cb)">$0</span><span style="flex:1"><span class="chip chip-s" style="font-size:10px">Collecting</span></span></div>
+      <div class="tbl-row"><span style="flex:2;font-size:13px;color:var(--ci)">Basement</span><span style="flex:1;font-size:13px;color:var(--cm)">Montréal</span><span style="flex:1;font-size:13px;color:var(--cm)">0</span><span style="flex:1;font-family:var(--serif);font-size:14px;color:var(--cb)">—</span><span style="flex:1;font-size:13px;color:var(--cb)">$0</span><span style="flex:1"><span class="chip chip-s" style="font-size:10px">Collecting</span></span></div>
+      <div class="tbl-row"><span style="flex:2;font-size:13px;color:var(--ci)">Deck / Patio</span><span style="flex:1;font-size:13px;color:var(--cm)">Montréal</span><span style="flex:1;font-size:13px;color:var(--cm)">0</span><span style="flex:1;font-family:var(--serif);font-size:14px;color:var(--cb)">—</span><span style="flex:1;font-size:13px;color:var(--cb)">$0</span><span style="flex:1"><span class="chip chip-s" style="font-size:10px">Collecting</span></span></div>
+      <div class="tbl-row"><span style="flex:2;font-size:13px;color:var(--ci)">Roofing</span><span style="flex:1;font-size:13px;color:var(--cm)">Montréal</span><span style="flex:1;font-size:13px;color:var(--cm)">0</span><span style="flex:1;font-family:var(--serif);font-size:14px;color:var(--cb)">—</span><span style="flex:1;font-size:13px;color:var(--cb)">$0</span><span style="flex:1"><span class="chip chip-s" style="font-size:10px">Collecting</span></span></div>
+      <div class="tbl-row"><span style="flex:2;font-size:13px;color:var(--ci)">Flooring</span><span style="flex:1;font-size:13px;color:var(--cm)">Montréal</span><span style="flex:1;font-size:13px;color:var(--cm)">0</span><span style="flex:1;font-family:var(--serif);font-size:14px;color:var(--cb)">—</span><span style="flex:1;font-size:13px;color:var(--cb)">$0</span><span style="flex:1"><span class="chip chip-s" style="font-size:10px">Collecting</span></span></div>
+      <div class="tbl-row"><span style="flex:2;font-size:13px;color:var(--ci)">Painting</span><span style="flex:1;font-size:13px;color:var(--cm)">Montréal</span><span style="flex:1;font-size:13px;color:var(--cm)">0</span><span style="flex:1;font-family:var(--serif);font-size:14px;color:var(--cb)">—</span><span style="flex:1;font-size:13px;color:var(--cb)">$0</span><span style="flex:1"><span class="chip chip-s" style="font-size:10px">Collecting</span></span></div>
+      <div class="tbl-row"><span style="flex:2;font-size:13px;color:var(--ci)">Electrical</span><span style="flex:1;font-size:13px;color:var(--cm)">Montréal</span><span style="flex:1;font-size:13px;color:var(--cm)">0</span><span style="flex:1;font-family:var(--serif);font-size:14px;color:var(--cb)">—</span><span style="flex:1;font-size:13px;color:var(--cb)">$0</span><span style="flex:1"><span class="chip chip-s" style="font-size:10px">Collecting</span></span></div>
+    </div>
+    <div style="padding:14px 18px;background:var(--cs);border-top:1px solid var(--b10);font-size:12px;color:var(--cb);line-height:1.7">
+      🔒 This data is yours alone. At 100 completed transactions per category, Struxia Price Intelligence goes live on the homepage showing real average prices to homeowners. This is a data moat no competitor can copy.
+      <br>To record a completed transaction: <code style="font-family:var(--mono);font-size:11px;background:var(--cl);padding:1px 6px;border-radius:4px">addTransaction('Kitchen', 7200, 'Montréal')</code> in browser console.
+    </div>
+  </div>
+</div>
+<div class="pg" id="pg-contractors">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px">
+    <div><div class="sec-h">Contractors</div><div class="sec-sub">6 registered · 5 verified · 1 pending approval</div></div>
+    <button class="btn btn-g btn-sm">Export CSV</button>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden" id="ctrs-table"></div>
+</div>
+
+<!-- ═══ PAYOUTS ═══ -->
+<div class="pg" id="pg-payouts">
+  <div style="margin-bottom:22px"><div class="sec-h">Payouts</div><div class="sec-sub">All contractor payments processed through Stripe Connect</div></div>
+  <div class="g3" style="margin-bottom:22px">
+    <div class="card"><div style="font-family:var(--serif);font-size:26px;color:var(--g)">$45,500</div><div style="font-size:12px;color:var(--cb)">Total paid to contractors</div></div>
+    <div class="card"><div style="font-family:var(--serif);font-size:26px;color:var(--g)">$1,416</div><div style="font-size:12px;color:var(--cb)">Platform fees earned</div></div>
+    <div class="card"><div style="font-family:var(--serif);font-size:26px;color:var(--g)">0</div><div style="font-size:12px;color:var(--cb)">Disputes to date</div></div>
+  </div>
+  <div class="tbl-wrap">
+    <div style="padding:16px 18px;border-bottom:1px solid var(--b10)">
+      <div style="font-family:var(--serif);font-size:18px;font-weight:400;color:var(--ci);letter-spacing:-0.3px">Payout history</div>
+    </div>
+    <div class="tbl-hdr">
+      <span style="flex:2">Contractor</span>
+      <span style="flex:2">Job</span>
+      <span style="flex:1">Amount</span>
+      <span style="flex:1">Milestone</span>
+      <span style="flex:1">Date</span>
+    </div>
+    <div class="tbl-row">
+      <span style="flex:2;font-size:13px;color:var(--ci)">Summit Builds</span>
+      <span style="flex:2;font-size:13px;color:var(--cm)">Kitchen renovation</span>
+      <span style="flex:1;font-family:var(--serif);font-size:14px;color:var(--g)">$2,160</span>
+      <span style="flex:1"><span class="chip chip-g" style="font-size:10px">1 of 3</span></span>
+      <span style="flex:1;font-size:12px;color:var(--cb)">Mar 18</span>
+    </div>
+    <div class="tbl-row">
+      <span style="flex:2;font-size:13px;color:var(--ci)">ProBuild Co.</span>
+      <span style="flex:2;font-size:13px;color:var(--cm)">Basement finishing</span>
+      <span style="flex:1;font-family:var(--serif);font-size:14px;color:var(--g)">$14,500</span>
+      <span style="flex:1"><span class="chip chip-g" style="font-size:10px">Complete</span></span>
+      <span style="flex:1;font-size:12px;color:var(--cb)">Mar 12</span>
+    </div>
+    <div class="tbl-row">
+      <span style="flex:2;font-size:13px;color:var(--ci)">Terrain Vert</span>
+      <span style="flex:2;font-size:13px;color:var(--cm)">Cedar deck</span>
+      <span style="flex:1;font-family:var(--serif);font-size:14px;color:var(--g)">$8,800</span>
+      <span style="flex:1"><span class="chip chip-g" style="font-size:10px">Complete</span></span>
+      <span style="flex:1;font-size:12px;color:var(--cb)">Mar 5</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SETTINGS ═══ -->
+<div class="pg" id="pg-settings">
+  <div style="margin-bottom:24px"><div class="sec-h">Settings</div><div class="sec-sub">Platform configuration and account preferences</div></div>
+  <div class="settings-grid">
+    <div class="settings-nav">
+      <button class="sn-item on" onclick="swSettings(this,'sp-account')">Account</button>
+      <button class="sn-item" onclick="swSettings(this,'sp-platform')">Platform</button>
+      <button class="sn-item" onclick="swSettings(this,'sp-payments')">Payments</button>
+      <button class="sn-item" onclick="swSettings(this,'sp-notif')">Notifications</button>
+      <button class="sn-item" onclick="swSettings(this,'sp-legal')">Legal</button>
+    </div>
+    <div>
+      <div class="settings-panel on" id="sp-account">
+        <div class="card">
+          <div class="settings-sec-title">Account details</div>
+          <div class="g2" style="margin-bottom:16px">
+            <div><label class="lbl">Full name</label><input class="inp" value="Leslie Carré"></div>
+            <div><label class="lbl">Email</label><input class="inp" value="lesliecarre9@gmail.com"></div>
+          </div>
+          <div style="margin-bottom:16px"><label class="lbl">Business name</label><input class="inp" value="Jobbr Marketplace Inc."></div>
+          <button class="btn btn-g btn-sm" onclick="toast('Account saved')">Save changes</button>
+        </div>
+      </div>
+
+      <div class="settings-panel" id="sp-platform">
+        <div class="card">
+          <div class="settings-sec-title">Platform settings</div>
+          <div class="toggle-row">
+            <div><div class="toggle-lbl">AI bid analysis</div><div class="toggle-sub">Claude AI analyzes every bid for fairness</div></div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-lbl">Video assessments</div><div class="toggle-sub">Allow builders to book video calls before bidding</div></div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-lbl">Progress photos</div><div class="toggle-sub">Require builders to post daily progress photos</div></div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-lbl">Struxia Score</div><div class="toggle-sub">Display contractor reputation score on all profiles</div></div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-panel" id="sp-payments">
+        <div class="card">
+          <div class="settings-sec-title">Payment settings</div>
+          <div class="toggle-row">
+            <div><div class="toggle-lbl">Milestone escrow</div><div class="toggle-sub">30/40/30 split, released per homeowner approval</div></div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-lbl">Stripe live mode</div><div class="toggle-sub">Accept real payments — requires bank account</div></div>
+            <button class="toggle" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="divider"></div>
+          <div style="margin-bottom:14px"><label class="lbl">Platform fee</label><input class="inp" value="3%" style="max-width:120px"></div>
+          <button class="btn btn-g btn-sm" onclick="toast('Payment settings saved')">Save changes</button>
+        </div>
+      </div>
+
+      <div class="settings-panel" id="sp-notif">
+        <div class="card">
+          <div class="settings-sec-title">Notification settings</div>
+          <div class="toggle-row">
+            <div><div class="toggle-lbl">New bid received</div><div class="toggle-sub">Email when a builder submits a bid</div></div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-lbl">Milestone complete</div><div class="toggle-sub">Email when builder marks a milestone done</div></div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-lbl">AI analysis ready</div><div class="toggle-sub">Email when bid analysis completes</div></div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-lbl">Payment processed</div><div class="toggle-sub">Email on every escrow release</div></div>
+            <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-panel" id="sp-legal">
+        <div class="card">
+          <div class="settings-sec-title">Legal &amp; compliance</div>
+          <div class="toggle-row">
+            <div><div class="toggle-lbl">FINTRAC registration</div><div class="toggle-sub">Mandatory before first real transaction — Day 6</div></div>
+            <button class="toggle" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-lbl">GST/HST registered</div><div class="toggle-sub">CRA registration — Day 6</div></div>
+            <button class="toggle" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-lbl">Insurance active</div><div class="toggle-sub">Zensurance Cyber + E&O + General — Day 7</div></div>
+            <button class="toggle" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div class="toggle-row">
+            <div><div class="toggle-lbl">Terms of Service live</div><div class="toggle-sub">Termly.io PIPEDA + Quebec Law 25 — Day 7</div></div>
+            <button class="toggle" onclick="this.classList.toggle('on')"></button>
+          </div>
+          <div style="background:var(--warn-bg);border-radius:var(--r);padding:14px 16px;margin-top:14px;font-size:13px;color:#7a5010;line-height:1.6">
+            ⚠️ Do not accept real payments until FINTRAC registration and insurance are both active. Fine for skipping FINTRAC: up to $2,000,000.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+/* ═══ DATA ═══ */
+var CTRS=[
+  {name:'Summit Builds',spec:'General Contractor',rating:4.9,reviews:47,jobs:214,score:94,init:'SB',bg:'#243d32',prov:'QC',status:'verified',tier:'Elite'},
+  {name:'Lévesque Réno',spec:'Kitchen & Bath',rating:4.8,reviews:31,jobs:98,score:88,init:'LR',bg:'#335548',prov:'QC',status:'verified',tier:'Trusted Pro'},
+  {name:'ProBuild Co.',spec:'General Contractor',rating:4.7,reviews:22,jobs:67,score:82,init:'PB',bg:'#5a6b55',prov:'QC',status:'verified',tier:'Verified'},
+  {name:'Élite Électrique',spec:'Master Electrician',rating:5.0,reviews:18,jobs:142,score:96,init:'ÉE',bg:'#8b7355',prov:'QC',status:'verified',tier:'Elite'},
+  {name:'Pacific West Builds',spec:'General Contractor',rating:0,reviews:0,jobs:0,score:0,init:'PW',bg:'#c4b49a',prov:'BC',status:'pending',tier:'Basic'},
+  {name:'Terrain Vert',spec:'Landscaping & Deck',rating:4.6,reviews:14,jobs:45,score:79,init:'TV',bg:'#4a7c62',prov:'QC',status:'verified',tier:'Verified'},
+];
+var PHOTOS=[
+  {day:'Today · Day 6',caption:'Countertops installed — quartz looks perfect. Backsplash tiling starts tomorrow.',photos:['🪨','✨','📐']},
+  {day:'Yesterday · Day 5',caption:'All upper and lower cabinets installed. Countertop template tomorrow.',photos:['🍳','🔧']},
+  {day:'March 19 · Day 2',caption:'Wall demo complete — load-bearing beam installed and approved by engineer.',photos:['🏗️','✅']},
+  {day:'March 18 · Day 1',caption:'On site. Protection laid, demo started. Everything as expected.',photos:['🏠','📋']},
+];
+
+/* ═══ NAV ═══ */
+var pgMap={dash:'pg-dash',active:'pg-active',analytics:'pg-analytics',contractors:'pg-contractors',payouts:'pg-payouts',settings:'pg-settings'};
+var nlMap={dash:'nl-dash',active:'nl-active',analytics:'nl-analytics'};
+var siMap={dash:'si-dash',active:'si-active',analytics:'si-analytics',contractors:'si-ctrs',payouts:'si-payouts',settings:'si-settings'};
+
+function go(page){
+  Object.values(pgMap).forEach(function(id){var e=document.getElementById(id);if(e)e.classList.remove('on')});
+  Object.values(nlMap).forEach(function(id){var e=document.getElementById(id);if(e)e.classList.remove('on')});
+  Object.values(siMap).forEach(function(id){var e=document.getElementById(id);if(e)e.classList.remove('on')});
+  var pg=document.getElementById(pgMap[page]);if(pg)pg.classList.add('on');
+  var nl=document.getElementById(nlMap[page]);if(nl)nl.classList.add('on');
+  var si=document.getElementById(siMap[page]);if(si)si.classList.add('on');
+  window.scrollTo(0,0);
+}
+
+/* ═══ RENDER ═══ */
+function scC(s){return s>=90?'color:var(--g)':s>=80?'color:var(--gs)':'color:var(--cb)'}
+
+function renderCtrs(){
+  var el=document.getElementById('ctrs-table');if(!el)return;
+  var hdr='<div style="display:flex;padding:12px 18px;background:var(--cs);border-bottom:1px solid var(--b10)">'+
+    '<span style="flex:2;font-size:10px;font-weight:600;color:var(--cb);text-transform:uppercase;letter-spacing:0.8px">Builder</span>'+
+    '<span style="flex:1;font-size:10px;font-weight:600;color:var(--cb);text-transform:uppercase;letter-spacing:0.8px">Province</span>'+
+    '<span style="flex:1;font-size:10px;font-weight:600;color:var(--cb);text-transform:uppercase;letter-spacing:0.8px">Rating</span>'+
+    '<span style="flex:1;font-size:10px;font-weight:600;color:var(--cb);text-transform:uppercase;letter-spacing:0.8px">JS Score</span>'+
+    '<span style="flex:1;font-size:10px;font-weight:600;color:var(--cb);text-transform:uppercase;letter-spacing:0.8px">Jobs</span>'+
+    '<span style="flex:1;font-size:10px;font-weight:600;color:var(--cb);text-transform:uppercase;letter-spacing:0.8px">Status</span>'+
+    '<span style="flex:1;font-size:10px;font-weight:600;color:var(--cb);text-transform:uppercase;letter-spacing:0.8px">Action</span>'+
+    '</div>';
+  var rows=CTRS.map(function(c){
+    var ip=c.status==='pending';
+    return'<div style="display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--b10);transition:background 0.15s" onmouseover="this.style.background=\'var(--cs)\'" onmouseout="this.style.background=\'\'">'+
+      '<div style="flex:2;display:flex;align-items:center;gap:10px">'+
+      '<div style="width:36px;height:36px;border-radius:9px;background:'+c.bg+';display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:12px;color:var(--c);flex-shrink:0">'+c.init+'</div>'+
+      '<div><div style="font-size:13px;font-weight:500;color:var(--ci)">'+c.name+'</div><div style="font-size:11px;color:var(--cb)">'+c.spec+'</div></div>'+
+      '</div>'+
+      '<span style="flex:1;font-size:13px;color:var(--cm)">'+c.prov+'</span>'+
+      '<span style="flex:1;font-size:13px;color:var(--ci)">'+(c.rating||'—')+'</span>'+
+      '<span style="flex:1;font-size:13px;font-weight:500;'+scC(c.score)+'">'+(c.score||'—')+'</span>'+
+      '<span style="flex:1;font-size:13px;color:var(--ci)">'+c.jobs+'</span>'+
+      '<span style="flex:1"><span class="chip '+(ip?'chip-w':'chip-g')+'" style="font-size:10px">'+(ip?'Pending':'Verified')+'</span></span>'+
+      '<span style="flex:1">'+
+      (ip?'<button class="btn btn-g" style="font-size:12px;padding:6px 14px;border-radius:100px" onclick="toast(\'✓ '+c.name+' approved!\')">Approve</button>':
+         '<button class="btn btn-o" style="font-size:12px;padding:6px 14px;border-radius:100px" onclick="toast(\'Viewing '+c.name+'…\')">View</button>')+
+      '</span></div>';
+  }).join('');
+  el.innerHTML=hdr+rows;
+}
+
+function renderPhotos(){
+  var el=document.getElementById('photo-tl');if(!el)return;
+  el.innerHTML=PHOTOS.map(function(p){
+    var photos=p.photos.map(function(ph){
+      return'<div class="pt-photo">'+ph+'</div>';
+    }).join('');
+    return'<div class="pt-item">'+
+      '<div class="pt-av" style="background:var(--g)">SB</div>'+
+      '<div style="flex:1">'+
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">'+
+      '<span class="pt-author">Summit Builds</span>'+
+      '<span class="pt-time">'+p.day+'</span>'+
+      '</div>'+
+      '<div class="pt-caption">'+p.caption+'</div>'+
+      '<div class="pt-photos">'+photos+'</div>'+
+      '</div></div>';
+  }).join('');
+}
+
+/* ═══ MILESTONE ═══ */
+function approveMilestone(){
+  var s=document.getElementById('ms2-step');
+  if(s){
+    s.className='ms-step ms-done';
+    s.querySelector('.ms-dot').textContent='✓';
+    var badge=s.querySelector('.chip');
+    if(badge){badge.className='chip chip-g';badge.textContent='Released'}
+  }
+  toast('$2,880 released to Summit Builds.');
+}
+
+/* ═══ SETTINGS TABS ═══ */
+function swSettings(btn,panelId){
+  document.querySelectorAll('.sn-item').forEach(function(b){b.classList.remove('on')});
+  document.querySelectorAll('.settings-panel').forEach(function(p){p.classList.remove('on')});
+  btn.classList.add('on');
+  var p=document.getElementById(panelId);if(p)p.classList.add('on');
+}
+
+/* ═══ TOAST ═══ */
+function toast(msg){
+  var old=document.querySelector('.toast');if(old)old.remove();
+  var t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.getElementById('toast-root').appendChild(t);
+  setTimeout(function(){if(t.parentNode)t.remove()},3000);
+}
+
+/* ═══ INIT ═══ */
+renderCtrs();
+renderPhotos();
+</script>
+</body>
+</html>
